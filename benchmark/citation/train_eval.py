@@ -1,5 +1,10 @@
 import time
 
+from tqdm import tqdm, trange
+import copy
+
+from pathlib import Path
+
 import torch
 import torch.nn.functional as F
 from torch import tensor
@@ -36,9 +41,10 @@ def random_planetoid_splits(data, num_classes):
 
 
 def run_train(dataset, model, runs, epochs, lr, weight_decay, early_stopping,
-              profiling, permute_masks=None, logger=None):
+              profiling, permute_masks=None, logger=None, ckpt_path=None):
     val_losses, accs, durations = [], [], []
-    for run in range(runs):
+    best_model = None
+    for run in trange(runs):
         data = dataset[0]
         if permute_masks is not None:
             data = permute_masks(data, dataset.num_classes)
@@ -71,6 +77,8 @@ def run_train(dataset, model, runs, epochs, lr, weight_decay, early_stopping,
             if eval_info['val_loss'] < best_val_loss:
                 best_val_loss = eval_info['val_loss']
                 test_acc = eval_info['test_acc']
+                
+                best_model = copy.deepcopy(model)
 
             val_loss_history.append(eval_info['val_loss'])
             if early_stopping > 0 and epoch > epochs // 2:
@@ -91,6 +99,14 @@ def run_train(dataset, model, runs, epochs, lr, weight_decay, early_stopping,
     print(f'Val Loss: {float(loss.mean()):.4f}, '
           f'Test Accuracy: {float(acc.mean()):.3f} ± {float(acc.std()):.3f}, '
           f'Duration: {float(duration.mean()):.3f}s')
+    
+    ckpt = {
+        'avg_best_val_loss': sum(val_losses) / len(val_losses),
+        'avg_best_test_acc': sum(accs) / len(accs),
+        'best_model_state_dict': best_model.state_dict(),
+        'avg_duration': sum(durations) / len(durations)
+        }
+    torch.save(ckpt, ckpt_path)
 
     if profiling:
         with torch_profile():
@@ -128,10 +144,14 @@ def run_inference(dataset, model, epochs, profiling, bf16, permute_masks=None,
 
 
 def run(dataset, model, runs, epochs, lr, weight_decay, early_stopping,
-        inference, profiling, bf16, permute_masks=None, logger=None):
+        inference, profiling, bf16, permute_masks=None, logger=None, ckpt_path=None):
+    
+    if ckpt_path:
+        Path(ckpt_path).mkdir(parents=True, exist_ok=True)
+
     if not inference:
         run_train(dataset, model, runs, epochs, lr, weight_decay,
-                  early_stopping, profiling, permute_masks, logger)
+                  early_stopping, profiling, permute_masks, logger, ckpt_path)
     else:
         run_inference(dataset, model, epochs, profiling, bf16, permute_masks,
                       logger)
