@@ -33,7 +33,7 @@ class GraphSAGE(torch.nn.Module):
         layers = [1, 2, 3, 4, 5]
         hiddens = [16, 32, 64, 128]
     '''
-    def __init__(self, dataset, num_layers=2, hidden=16):
+    def __init__(self, dataset, num_layers=2, hidden=128):
         super().__init__()
         self.conv1 = SAGEConv(dataset.num_features, hidden)
         self.convs = torch.nn.ModuleList()
