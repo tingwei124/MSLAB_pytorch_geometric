@@ -145,9 +145,6 @@ def run_inference(dataset, model, epochs, profiling, bf16, permute_masks=None,
 
 def run(dataset, model, runs, epochs, lr, weight_decay, early_stopping,
         inference, profiling, bf16, permute_masks=None, logger=None, ckpt_path=None):
-    
-    if ckpt_path:
-        Path(ckpt_path).mkdir(parents=True, exist_ok=True)
 
     if not inference:
         run_train(dataset, model, runs, epochs, lr, weight_decay,

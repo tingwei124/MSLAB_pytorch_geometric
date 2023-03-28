@@ -21,7 +21,7 @@ parser.add_argument('--no_normalize_features', action='store_true')
 parser.add_argument('--inference', action='store_true')
 parser.add_argument('--profile', action='store_true')
 parser.add_argument('--bf16', action='store_true')
-parser.add_argument('--ckpt_path', type=str)
+parser.add_argument('--ckpt_path', type=str, required=True)
 
 args = parser.parse_args()
 

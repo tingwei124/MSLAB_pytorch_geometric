@@ -30,3 +30,5 @@ benchmark/results/
 
 !torch_geometric/data/
 !test/data/
+
+benchmark/citation/ckpt/cora/*
