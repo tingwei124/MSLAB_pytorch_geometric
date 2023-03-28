@@ -13,5 +13,6 @@ Each experiment is repeated 100 times on either a fixed train/val/test split or 
 Run the whole test suite via
 
 ```
+# export CUDA_VISIBLE_DEVICES=?
 $ ./run.sh
 ```

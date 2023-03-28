@@ -158,6 +158,10 @@ def train(model, optimizer, data):
     model.train()
     optimizer.zero_grad()
     out = model(data)
+
+    # print(f"the shape of data.train_mask : {data.train_mask.shape}")
+    # print(f"the shape of out : {out.shape}")
+    
     loss = F.nll_loss(out[data.train_mask], data.y[data.train_mask])
     loss.backward()
     optimizer.step()
